@@ -324,7 +324,7 @@ services:
   frontend:
     build:
       context: ./web
-      dockerfile: ../docker/frontend.Dockerfile
+      dockerfile: Dockerfile
       target: development
     container_name: crm-frontend
     restart: unless-stopped
