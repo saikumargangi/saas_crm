@@ -1,0 +1,519 @@
+/**
+ * CRM Design System - CSS Variables (Design Tokens)
+ * Architecture Section 12.6 - Fyxer-Inspired Design System
+ * 
+ * This file implements the complete color palette, typography, spacing,
+ * and component styles as specified in the architecture document.
+ */
+
+:root {
+    /* ==========================================================================
+     Primary Colors (Section 12.2)
+     ========================================================================== */
+
+    --color-background: #F0F2F7;
+    /* Page backgrounds, soft lavender-blue */
+    --color-surface: #FFFFFF;
+    /* Email cards, content areas */
+    --color-text-primary: #1A1A1A;
+    /* Main headings, body content */
+    --color-text-secondary: #666666;
+    /* Timestamps, subtitles, descriptions */
+    --color-text-tertiary: #707A8A;
+    /* Less important metadata */
+
+    /* ==========================================================================
+     Interactive Colors (Section 12.2)
+     ========================================================================== */
+
+    --color-button-primary: #1E1E1E;
+    /* "Start with Gmail" primary action */
+    --color-button-primary-hover: #2D2D2D;
+    /* Primary button hover state */
+    --color-button-secondary: #FFFFFF;
+    /* Alternative action, less prominent */
+    --color-label-bg: #FFF9E5;
+    /* "FYI" tags, soft yellow */
+    --color-label-text: #8B7300;
+    /* Dark yellow/gold text */
+    --color-link: #8B9AFF;
+    /* Soft blue-purple, interactive states */
+    --color-border: #E5E7EB;
+    /* Separating inbox items, subtle */
+
+    /* ==========================================================================
+     Avatar Background Palette - Soft Pastels (Section 12.2)
+     ========================================================================== */
+
+    --color-avatar-pink: #FFE8F0;
+    /* Contact initials (e.g., "S" for Sarah) */
+    --color-avatar-lavender: #E8E8FF;
+    /* Contact initials (e.g., "J" for John) */
+    --color-avatar-green: #E8F9E8;
+    /* Team/Group avatars (e.g., "L" for Legal) */
+    --color-avatar-purple: #F0E8FF;
+    /* Department avatars (e.g., "M" for Marketing) */
+
+    /* ==========================================================================
+     Status & Feedback Colors (Section 12.2)
+     ========================================================================== */
+
+    --color-active: #00D084;
+    /* Bright green indicator dot */
+    --color-success: #28CA42;
+    /* Completion states */
+    --color-warning: #FFBD2E;
+    /* Caution states */
+    --color-error: #FF5F57;
+    /* Error states */
+    --color-row-hover: #FAFBFC;
+    /* Very light gray on hover */
+    --color-row-selected: #F5F6FA;
+    /* Slightly darker than hover */
+
+    /* ==========================================================================
+     macOS Window Chrome (Section 12.2)
+     ========================================================================== */
+
+    --color-window-close: #FF5F57;
+    /* Window close (red) */
+    --color-window-minimize: #FFBD2E;
+    /* Window minimize (yellow) */
+    --color-window-zoom: #28CA42;
+    /* Window zoom (green) */
+
+    /* ==========================================================================
+     Typography (Section 12.3)
+     ========================================================================== */
+
+    --font-serif: 'Georgia', 'Garamond', 'Times New Roman', serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    --font-mono: 'Courier New', 'Consolas', 'Monaco', monospace;
+
+    --text-h1: 32px;
+    --text-h2: 24px;
+    --text-h3: 18px;
+    --text-body: 14px;
+    --text-small: 12px;
+    --text-caption: 11px;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    /* ==========================================================================
+     Spacing (Section 12.6)
+     ========================================================================== */
+
+    --space-2: 2px;
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-48: 48px;
+    --space-64: 64px;
+
+    /* ==========================================================================
+     Border Radius (Section 12.6)
+     ========================================================================== */
+
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-base: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* ==========================================================================
+     Shadows (Section 12.6)
+     ========================================================================== */
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.12);
+
+    /* ==========================================================================
+     Transitions (Section 12.6)
+     ========================================================================== */
+
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.3s ease;
+}
+
+/* ==========================================================================
+   Global Styles
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Typography Styles (Section 12.3)
+   ========================================================================== */
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-serif);
+    font-weight: var(--weight-semibold);
+    line-height: 1.3;
+    margin-bottom: var(--space-16);
+}
+
+h1 {
+    font-size: var(--text-h1);
+    color: var(--color-text-primary);
+}
+
+h2 {
+    font-size: var(--text-h2);
+    color: var(--color-text-primary);
+}
+
+h3 {
+    font-size: var(--text-h3);
+    color: var(--color-text-primary);
+}
+
+p {
+    margin-bottom: var(--space-12);
+    color: var(--color-text-secondary);
+}
+
+a {
+    color: var(--color-link);
+    text-decoration: none;
+    transition: opacity var(--transition-base);
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   Button Styles (Section 12.4)
+   ========================================================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) var(--space-24);
+    border-radius: var(--radius-base);
+    font-size: 15px;
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-base);
+    font-family: var(--font-sans);
+}
+
+.btn-primary {
+    background-color: var(--color-button-primary);
+    color: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-button-primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background-color: var(--color-button-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    box-shadow: none;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-row-hover);
+    border-color: #D1D5DB;
+}
+
+/* ==========================================================================
+   Card Styles (Section 12.4)
+   ========================================================================== */
+
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    padding: var(--space-16);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--transition-base);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* ==========================================================================
+   Input Field Styles (Section 12.4)
+   ========================================================================== */
+
+input,
+textarea,
+select {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    padding: 10px 12px;
+    border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
+    font-size: var(--text-body);
+    font-family: var(--font-sans);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    width: 100%;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-link);
+    box-shadow: 0 0 0 3px rgba(139, 154, 255, 0.1);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* ==========================================================================
+   Inbox List Item Design (Section 12.4)
+   ========================================================================== */
+
+.inbox-item {
+    background-color: var(--color-surface);
+    padding: var(--space-12) var(--space-16);
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-12);
+}
+
+.inbox-item:hover {
+    background-color: var(--color-row-hover);
+}
+
+.inbox-item.selected {
+    background-color: var(--color-row-selected);
+}
+
+.inbox-item.unread {
+    border-left: 3px solid var(--color-button-primary);
+    font-weight: var(--weight-semibold);
+}
+
+.inbox-item .sender-name {
+    font-size: 15px;
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.inbox-item .subject {
+    font-size: var(--text-body);
+    color: var(--color-text-primary);
+}
+
+.inbox-item .preview {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.inbox-item .timestamp {
+    font-size: var(--text-small);
+    color: var(--color-text-tertiary);
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   Avatar Styles (Section 12.4)
+   ========================================================================== */
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: var(--weight-semibold);
+    flex-shrink: 0;
+}
+
+.avatar-pink {
+    background-color: var(--color-avatar-pink);
+    color: #C2185B;
+}
+
+.avatar-lavender {
+    background-color: var(--color-avatar-lavender);
+    color: #5E35B1;
+}
+
+.avatar-green {
+    background-color: var(--color-avatar-green);
+    color: #2E7D32;
+}
+
+.avatar-purple {
+    background-color: var(--color-avatar-purple);
+    color: #6A1B9A;
+}
+
+/* ==========================================================================
+   Label/Tag Styles (Section 12.4)
+   ========================================================================== */
+
+.label {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-regular);
+    background-color: var(--color-label-bg);
+    color: var(--color-label-text);
+}
+
+/* ==========================================================================
+   Status Indicators
+   ========================================================================== */
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-active {
+    background-color: var(--color-active);
+}
+
+.status-success {
+    background-color: var(--color-success);
+}
+
+.status-warning {
+    background-color: var(--color-warning);
+}
+
+.status-error {
+    background-color: var(--color-error);
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-16);
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-4 {
+    gap: var(--space-4);
+}
+
+.gap-8 {
+    gap: var(--space-8);
+}
+
+.gap-12 {
+    gap: var(--space-12);
+}
+
+.gap-16 {
+    gap: var(--space-16);
+}
+
+.mt-16 {
+    margin-top: var(--space-16);
+}
+
+.mb-16 {
+    margin-bottom: var(--space-16);
+}
+
+.p-16 {
+    padding: var(--space-16);
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* ==========================================================================
+   Responsive Design (Section 12.7)
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    :root {
+        --text-h1: 24px;
+        --text-h2: 20px;
+        --text-h3: 16px;
+    }
+
+    .inbox-item {
+        padding: var(--space-8) var(--space-12);
+    }
+
+    .btn {
+        padding: var(--space-8) var(--space-16);
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1025px) {
+    .container {
+        max-width: 1200px;
+    }
+}

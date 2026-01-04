@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  /* Color Palette */
+  --color-background: #F0F2F7;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #707A8A;
+
+  --color-button-primary: #1E1E1E;
+  --color-button-primary-hover: #2D2D2D;
+  --color-button-secondary: #FFFFFF;
+  --color-button-secondary-border: #E5E7EB;
+
+  --color-active: #00D084;
+  --color-success: #28CA42;
+  --color-warning: #FFBD2E;
+  --color-error: #FF5F57;
+
+  --color-border: #E5E7EB;
+  --color-row-hover: #FAFBFC;
+  --color-row-selected: #F5F6FA;
+
+  /* Typography */
+  --font-serif: Georgia, Garamond, "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: "Courier New", Consolas, Monaco, monospace;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Utilities / Components */
+@layer components {
+  .btn-primary {
+    @apply bg-button-primary text-white px-6 py-3 rounded-md text-[15px] font-medium cursor-pointer transition-all shadow-sm hover:bg-button-primary-hover hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-text-primary px-6 py-3 rounded-md text-[15px] font-medium cursor-pointer border border-border transition-all hover:bg-row-hover hover:border-gray-300;
+  }
+
+  .card {
+    @apply bg-surface rounded-lg border border-border p-4 shadow-sm transition-shadow hover:shadow-md;
+  }
+}
