@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Search, Inbox, Users, Building, DollarSign, BarChart2, Settings } from 'lucide-react';
+import { Search, Inbox, Users, Building, DollarSign, BarChart2, Settings, Workflow, TrendingUp, Plug } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -50,11 +50,14 @@ export default function Sidebar() {
             </div>
 
             <nav className="flex-1 space-y-1">
+                <NavItem href="/dashboard" label="Dashboard" icon={BarChart2} />
                 <NavItem href="/inbox" label="Inbox" icon={Inbox} />
                 <NavItem href="/contacts" label="Contacts" icon={Users} />
                 <NavItem href="/companies" label="Companies" icon={Building} />
                 <NavItem href="/deals" label="Deals" icon={DollarSign} />
-                <NavItem href="/dashboard" label="Dashboard" icon={BarChart2} />
+                <NavItem href="/workflows" label="Workflows" icon={Workflow} />
+                <NavItem href="/analytics" label="Analytics" icon={TrendingUp} />
+                <NavItem href="/integrations" label="Integrations" icon={Plug} />
             </nav>
 
             <div className="mt-auto pt-4 border-t border-border">
