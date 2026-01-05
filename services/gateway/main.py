@@ -74,15 +74,21 @@ async def add_security_headers(request: Request, call_next):
 # CORS (Architecture 8.3)
 origins = [
     "http://localhost:3000",
-    "https://app.domain.com"
+    "http://127.0.0.1:3000",
+    "http://0.0.0.0:3000"
 ]
+
+# Allow all origins in development to verify network access
+# In production, this should be restricted
+allow_origin_regex = r"http://.*"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=allow_origin_regex,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Route Mounting
@@ -109,6 +115,11 @@ app.include_router(analytics_routes.router)
 from services.integration import routes as integration_routes
 # Integration Service -> /api/v1/integrations
 app.include_router(integration_routes.router)
+
+from services.crm import campaign_routes
+# Campaign Service -> /api/v1/campaigns
+app.include_router(campaign_routes.router)
+
 
 @app.get("/")
 async def root():

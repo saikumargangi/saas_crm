@@ -3,7 +3,9 @@
  * Handles authentication, token refresh, and API requests
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (typeof window === 'undefined' ? 'http://localhost:8000/api/v1' : '/api/v1');
 
 class APIClient {
     private getAccessToken(): string | null {
@@ -65,7 +67,7 @@ class APIClient {
         };
 
         if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
+            (headers as any)['Authorization'] = `Bearer ${accessToken}`;
         }
 
         let response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -81,7 +83,7 @@ class APIClient {
                 // Retry request with new token
                 const newAccessToken = this.getAccessToken();
                 if (newAccessToken) {
-                    headers['Authorization'] = `Bearer ${newAccessToken}`;
+                    (headers as any)['Authorization'] = `Bearer ${newAccessToken}`;
                 }
 
                 response = await fetch(`${API_BASE_URL}${endpoint}`, {
