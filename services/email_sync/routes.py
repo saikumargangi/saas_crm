@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 import sys
 import os
 
@@ -13,6 +13,186 @@ from services.email_sync import models, schemas, sync_manager, gmail_client
 from services.auth import dependencies
 
 router = APIRouter(prefix="/api/v1/email", tags=["email"])
+
+# ============================================================================
+# MVP FEATURE 1: Person-Based Email Grouping & AI Summaries
+# ============================================================================
+
+@router.get("/by-person")
+async def get_emails_by_person(
+    user = Depends(dependencies.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Group all emails by person (sender/recipient).
+    Returns list of people with email counts and last interaction date.
+    """
+    from sqlalchemy import func, case, distinct
+    from services.crm.models import Contact
+    
+    # Get all unique email addresses from emails table
+    # Union of from_address and to_addresses
+    query = select(
+        models.Email.from_address.label('email'),
+        func.count(models.Email.id).label('email_count'),
+        func.max(models.Email.received_at).label('last_email_date'),
+        func.min(models.Email.received_at).label('first_email_date')
+    ).where(
+        models.Email.user_id == user.id
+    ).group_by(models.Email.from_address)
+    
+    result = await db.execute(query)
+    people = result.all()
+    
+    # Enrich with contact information
+    response = []
+    for person in people:
+        # Try to find matching contact
+        contact_query = select(Contact).where(
+            Contact.user_id == user.id,
+            Contact.email == person.email
+        )
+        contact_result = await db.execute(contact_query)
+        contact = contact_result.scalars().first()
+        
+        response.append({
+            "email": person.email,
+            "name": f"{contact.first_name} {contact.last_name}" if contact and contact.first_name else person.email,
+            "email_count": person.email_count,
+            "last_email_date": person.last_email_date.isoformat() if person.last_email_date else None,
+            "first_email_date": person.first_email_date.isoformat() if person.first_email_date else None,
+            "contact_id": str(contact.id) if contact else None,
+            "needs_follow_up": contact.needs_follow_up if contact else False
+        })
+    
+    # Sort by last email date (most recent first)
+    response.sort(key=lambda x: x['last_email_date'] or '', reverse=True)
+    
+    return {"people": response, "total": len(response)}
+
+@router.get("/person/{email}/summary")
+async def get_person_email_summary(
+    email: str,
+    user = Depends(dependencies.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    AI-generated summary of all interactions with a specific person.
+    Uses Gemini to analyze email thread and generate insights.
+    """
+    # Get all emails with this person
+    query = select(models.Email).where(
+        models.Email.user_id == user.id,
+        or_(
+            models.Email.from_address == email,
+            models.Email.to_addresses.contains([email])
+        )
+    ).order_by(models.Email.received_at.desc())
+    
+    result = await db.execute(query)
+    emails = result.scalars().all()
+    
+    if not emails:
+        return {
+            "email": email,
+            "summary": "No email interactions found with this person.",
+            "total_emails": 0
+        }
+    
+    # Use AI to generate summary
+    from services.ai.classifiers import ai_classifier
+    import os
+    
+    # Prepare context for AI
+    email_texts = []
+    for e in emails[:10]:  # Last 10 emails for context
+        direction = "from" if e.from_address == email else "to"
+        email_texts.append(f"{direction.upper()}: {e.subject}\n{e.body_text[:500] if e.body_text else e.snippet}")
+    
+    context = "\n\n---\n\n".join(email_texts)
+    
+    # Generate AI summary using Gemini
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        model = genai.GenerativeModel('gemini-pro')
+        
+        prompt = f"""Analyze this email conversation history and provide a concise summary.
+
+Email conversation with: {email}
+Total emails: {len(emails)}
+
+Recent emails:
+{context}
+
+Provide a summary that includes:
+1. Main topics discussed
+2. Current status of the relationship
+3. Key action items or next steps
+4. Overall sentiment (positive/neutral/negative)
+
+Keep the summary under 200 words."""
+        
+        response = model.generate_content(prompt)
+        summary_text = response.text
+        
+    except Exception as e:
+        # Fallback to basic summary if AI fails
+        summary_text = f"You have exchanged {len(emails)} emails with {email}. Last email was on {emails[0].received_at.strftime('%Y-%m-%d')}."
+    
+    return {
+        "email": email,
+        "summary": summary_text,
+        "total_emails": len(emails),
+        "first_email_date": emails[-1].received_at.isoformat() if emails else None,
+        "last_email_date": emails[0].received_at.isoformat() if emails else None
+    }
+
+@router.get("/person/{email}/thread")
+async def get_person_email_thread(
+    email: str,
+    skip: int = 0,
+    limit: int = 50,
+    user = Depends(dependencies.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all emails with a specific person in chronological order.
+    Shows full conversation thread.
+    """
+    query = select(models.Email).where(
+        models.Email.user_id == user.id,
+        or_(
+            models.Email.from_address == email,
+            models.Email.to_addresses.contains([email])
+        )
+    ).order_by(models.Email.received_at.desc()).offset(skip).limit(limit)
+    
+    result = await db.execute(query)
+    emails = result.scalars().all()
+    
+    thread = []
+    for e in emails:
+        thread.append({
+            "id": str(e.id),
+            "subject": e.subject,
+            "from": e.from_address,
+            "to": e.to_addresses,
+            "body": e.body_text or e.snippet,
+            "received_at": e.received_at.isoformat(),
+            "is_read": e.is_read,
+            "direction": "received" if e.from_address == email else "sent"
+        })
+    
+    return {
+        "email": email,
+        "thread": thread,
+        "total": len(thread)
+    }
+
+# ============================================================================
+# Existing Endpoints
+# ============================================================================
 
 async def get_sync_manager(
     user = Depends(dependencies.get_current_active_user),

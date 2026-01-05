@@ -42,11 +42,18 @@ class Contact(Base):
     source = Column(String) # email, manual, import, api
     custom_fields = Column(JSONB)
     
+    # MVP Feature: Follow-up tracking
+    needs_follow_up = Column(Boolean, default=False, index=True)
+    follow_up_note = Column(Text)
+    follow_up_priority = Column(String) # high, medium, low
+    follow_up_date = Column(DateTime(timezone=True))
+    
     last_email_date = Column(DateTime(timezone=True))
     last_contact_date = Column(DateTime(timezone=True))
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
 
     company = relationship("Company", back_populates="contacts")
     deals = relationship("Deal", back_populates="contact")

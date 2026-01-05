@@ -206,6 +206,117 @@ async def get_contact_summary(
         summary_text=f"You have exchanged {total} emails with {contact.first_name}. Last interaction was on {last_email.received_at.strftime('%Y-%m-%d')}."
     )
 
+# ============================================================================
+# MVP FEATURE 2: Follow-Up Tracking
+# ============================================================================
+
+@router.post("/contacts/{id}/follow-up")
+async def mark_contact_for_follow_up(
+    id: UUID,
+    follow_up_data: dict,
+    user = Depends(dependencies.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Mark a contact for follow-up with note and priority.
+    """
+    result = await db.execute(select(models.Contact).where(
+        models.Contact.id == id,
+        models.Contact.user_id == user.id
+    ))
+    contact = result.scalars().first()
+    
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    contact.needs_follow_up = True
+    contact.follow_up_note = follow_up_data.get('note', '')
+    contact.follow_up_priority = follow_up_data.get('priority', 'medium')
+    contact.follow_up_date = func.now()
+    
+    await db.commit()
+    await db.refresh(contact)
+    
+    return {
+        "message": "Contact marked for follow-up",
+        "contact_id": str(contact.id),
+        "needs_follow_up": contact.needs_follow_up
+    }
+
+@router.get("/contacts/needs-follow-up")
+async def get_contacts_needing_follow_up(
+    skip: int = 0,
+    limit: int = 50,
+    priority: Optional[str] = None,
+    user = Depends(dependencies.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get all contacts marked for follow-up.
+    Sorted by priority and date.
+    """
+    query = select(models.Contact).where(
+        models.Contact.user_id == user.id,
+        models.Contact.needs_follow_up == True
+    )
+    
+    if priority:
+        query = query.where(models.Contact.follow_up_priority == priority)
+    
+    # Sort: high priority first, then by follow_up_date
+    query = query.order_by(
+        models.Contact.follow_up_priority.desc(),
+        models.Contact.follow_up_date.desc()
+    ).offset(skip).limit(limit)
+    
+    result = await db.execute(query)
+    contacts = result.scalars().all()
+    
+    return {
+        "contacts": [
+            {
+                "id": str(c.id),
+                "name": f"{c.first_name} {c.last_name}" if c.first_name else c.email,
+                "email": c.email,
+                "follow_up_note": c.follow_up_note,
+                "follow_up_priority": c.follow_up_priority,
+                "follow_up_date": c.follow_up_date.isoformat() if c.follow_up_date else None,
+                "last_email_date": c.last_email_date.isoformat() if c.last_email_date else None
+            }
+            for c in contacts
+        ],
+        "total": len(contacts)
+    }
+
+@router.put("/contacts/{id}/follow-up/complete")
+async def mark_follow_up_complete(
+    id: UUID,
+    user = Depends(dependencies.get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Mark follow-up as complete for a contact.
+    """
+    result = await db.execute(select(models.Contact).where(
+        models.Contact.id == id,
+        models.Contact.user_id == user.id
+    ))
+    contact = result.scalars().first()
+    
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    contact.needs_follow_up = False
+    contact.follow_up_note = None
+    contact.follow_up_priority = None
+    
+    await db.commit()
+    
+    return {
+        "message": "Follow-up marked as complete",
+        "contact_id": str(contact.id)
+    }
+
 # --- Deals ---
 
 @router.get("/deals", response_model=List[schemas.DealResponse])
