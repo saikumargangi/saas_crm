@@ -157,6 +157,8 @@ services:
       - GMAIL_SCOPES=${GMAIL_SCOPES}
       - STORAGE_BACKEND=local
       - STORAGE_LOCAL_PATH=/app/storage
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     ports:
       - "8002:8002"
     volumes:
