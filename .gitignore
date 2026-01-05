@@ -53,3 +53,4 @@ htmlcov/
 
 # Alembic
 alembic/versions/__pycache__/
+google_console.json
