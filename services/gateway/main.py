@@ -110,6 +110,25 @@ from services.integration import routes as integration_routes
 # Integration Service -> /api/v1/integrations
 app.include_router(integration_routes.router)
 
+@app.get("/")
+async def root():
+    """Root endpoint - provides API information and links"""
+    return {
+        "message": "CRM & Email Intelligence System API",
+        "version": "1.0.0",
+        "documentation": "/docs",
+        "health_check": "/health",
+        "services": {
+            "auth": "/api/v1/auth",
+            "crm": "/api/v1/crm",
+            "email": "/api/v1/email",
+            "ai": "/api/v1/ai",
+            "automation": "/api/v1/automation",
+            "analytics": "/api/v1/analytics",
+            "integrations": "/api/v1/integrations"
+        }
+    }
+
 @app.get("/health")
 async def health_check():
     return {
