@@ -52,12 +52,28 @@ export default function Sidebar() {
             <nav className="flex-1 space-y-1">
                 <NavItem href="/dashboard" label="Dashboard" icon={BarChart2} />
                 <NavItem href="/inbox" label="Inbox" icon={Inbox} />
-                <NavItem href="/contacts" label="Contacts" icon={Users} />
-                <NavItem href="/companies" label="Companies" icon={Building} />
-                <NavItem href="/deals" label="Deals" icon={DollarSign} />
-                <NavItem href="/workflows" label="Workflows" icon={Workflow} />
-                <NavItem href="/analytics" label="Analytics" icon={TrendingUp} />
-                <NavItem href="/integrations" label="Integrations" icon={Plug} />
+
+                {/* MVP Features */}
+                <div className="pt-2 pb-2">
+                    <div className="px-3 text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">
+                        Email Intelligence
+                    </div>
+                    <NavItem href="/people" label="People" icon={Users} />
+                    <NavItem href="/follow-ups" label="Follow-Ups" icon={Workflow} />
+                    <NavItem href="/campaigns" label="Campaigns" icon={TrendingUp} />
+                </div>
+
+                {/* Standard CRM */}
+                <div className="pt-2">
+                    <div className="px-3 text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">
+                        CRM
+                    </div>
+                    <NavItem href="/contacts" label="Contacts" icon={Users} />
+                    <NavItem href="/companies" label="Companies" icon={Building} />
+                    <NavItem href="/deals" label="Deals" icon={DollarSign} />
+                    <NavItem href="/analytics" label="Analytics" icon={BarChart2} />
+                    <NavItem href="/integrations" label="Integrations" icon={Plug} />
+                </div>
             </nav>
 
             <div className="mt-auto pt-4 border-t border-border">
