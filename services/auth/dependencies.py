@@ -5,6 +5,7 @@ from jose import JWTError, jwt
 from typing import Optional
 import sys
 import os
+import uuid
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -29,7 +30,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     user_id: str = payload.get("sub")
     if user_id is None:
         raise credentials_exception
-        
+    
+    # Gracefully handle legacy tokens (email in sub) or invalid tokens
+    try:
+        uuid_obj = uuid.UUID(user_id)
+    except ValueError:
+        raise credentials_exception
+
     # In a real high-perf scenario, might want to cache this or just trust the token claims
     # But for RBAC freshness, DB lookup is safer
     result = await db.execute(
