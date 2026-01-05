@@ -25,3 +25,5 @@ elasticsearch>=8.12.0
 slowapi>=0.1.9
 bandit>=1.7.5
 greenlet>=3.0.0
+beautifulsoup4>=4.12.0
+cryptography>=42.0.0
