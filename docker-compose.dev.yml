@@ -333,6 +333,7 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - NEXT_PUBLIC_WS_URL=ws://localhost:8000
       - NODE_ENV=development
+      - INTERNAL_API_URL=http://gateway:8000/api/v1
     ports:
       - "3000:3000"
     volumes:
