@@ -115,7 +115,87 @@ class SyncManager:
             "subject": parsed['subject']
         })
         
+        # Extract and create contacts from email
+        await self._extract_contacts_from_email(email_db, parsed)
+        
         return email_db
+
+    async def _extract_contacts_from_email(self, email: models.Email, parsed: Dict):
+        """Extract contacts from email sender and recipients"""
+        try:
+            from services.crm.models import Contact
+            import re
+            
+            # Helper to parse email address
+            def parse_email_address(email_str):
+                if not email_str:
+                    return None, None
+                # Format: "Name <email@example.com>" or just "email@example.com"
+                match = re.match(r'(?:"?([^"<]+)"?\s*)?<?([^>]+)>?', email_str.strip())
+                if match:
+                    name = match.group(1).strip() if match.group(1) else None
+                    email_addr = match.group(2).strip()
+                    return name, email_addr
+                return None, email_str.strip()
+            
+            # Collect all email addresses
+            contacts_to_process = []
+            
+            # From address
+            if parsed['from']:
+                contacts_to_process.append(parsed['from'])
+            
+            # To addresses
+            if parsed['to']:
+                for addr in parsed['to']:
+                    contacts_to_process.append(addr)
+            
+            # CC addresses
+            if parsed['cc']:
+                for addr in parsed['cc']:
+                    contacts_to_process.append(addr)
+            
+            # Process each contact
+            for contact_str in contacts_to_process:
+                name, email_addr = parse_email_address(contact_str)
+                
+                if not email_addr or '@' not in email_addr:
+                    continue
+                
+                # Check if contact already exists
+                result = await self.db.execute(
+                    select(Contact).where(
+                        Contact.user_id == self.user_id,
+                        Contact.email == email_addr
+                    )
+                )
+                existing_contact = result.scalars().first()
+                
+                if not existing_contact:
+                    # Create new contact
+                    first_name = None
+                    last_name = None
+                    
+                    if name:
+                        name_parts = name.split(' ', 1)
+                        first_name = name_parts[0]
+                        last_name = name_parts[1] if len(name_parts) > 1 else None
+                    
+                    new_contact = Contact(
+                        user_id=self.user_id,
+                        email=email_addr,
+                        first_name=first_name,
+                        last_name=last_name,
+                        source='email_sync'
+                    )
+                    self.db.add(new_contact)
+                    await self.db.commit()
+                    logger.info(f"Created contact from email: {email_addr}")
+                    
+        except Exception as e:
+            logger.error(f"Failed to extract contacts from email: {e}")
+            # Don't fail the sync, just log the error
+
 
     async def _process_attachments(self, email_id: str, raw_msg: Dict):
         """Finds attachment parts, downloads them, uploads to GCS, and saves metadata"""
