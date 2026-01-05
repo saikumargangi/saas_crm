@@ -10,9 +10,21 @@ from services.crm import routes, models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure tables exist (for dev)
+    # Ensure CRM-specific tables exist (for dev)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        # Only create tables defined in this service, not all tables
+        await conn.run_sync(
+            lambda sync_conn: models.Company.__table__.create(sync_conn, checkfirst=True)
+        )
+        await conn.run_sync(
+            lambda sync_conn: models.Contact.__table__.create(sync_conn, checkfirst=True)
+        )
+        await conn.run_sync(
+            lambda sync_conn: models.Deal.__table__.create(sync_conn, checkfirst=True)
+        )
+        await conn.run_sync(
+            lambda sync_conn: models.Activity.__table__.create(sync_conn, checkfirst=True)
+        )
     yield
 
 app = FastAPI(title="CRM Core Service", version="1.0.0", lifespan=lifespan)
