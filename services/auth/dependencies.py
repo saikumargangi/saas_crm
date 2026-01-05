@@ -26,14 +26,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if payload is None:
         raise credentials_exception
     
-    email: str = payload.get("sub")
-    if email is None:
+    user_id: str = payload.get("sub")
+    if user_id is None:
         raise credentials_exception
         
     # In a real high-perf scenario, might want to cache this or just trust the token claims
     # But for RBAC freshness, DB lookup is safer
     result = await db.execute(
-        select(models.User).where(models.User.email == email)
+        select(models.User).where(models.User.id == user_id)
     )
     user = result.scalars().first()
     

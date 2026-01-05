@@ -48,8 +48,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    access_token = utils.create_access_token(data={"sub": user.email})
-    refresh_token = utils.create_refresh_token(data={"sub": user.email})
+    access_token = utils.create_access_token(data={"sub": str(user.id), "email": user.email})
+    refresh_token = utils.create_refresh_token(data={"sub": str(user.id)})
     
     return {
         "access_token": access_token, 
@@ -67,14 +67,14 @@ async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)):
              headers={"WWW-Authenticate": "Bearer"},
         )
     
-    email = payload.get("sub")
+    user_id = payload.get("sub")
     # Verify user exists
-    result = await db.execute(select(models.User).where(models.User.email == email))
+    result = await db.execute(select(models.User).where(models.User.id == user_id))
     user = result.scalars().first()
     if not user:
          raise HTTPException(status_code=401, detail="User not found")
 
-    new_access_token = utils.create_access_token(data={"sub": email})
+    new_access_token = utils.create_access_token(data={"sub": str(user.id), "email": user.email})
     # Optionally rotate refresh token here
     return {
         "access_token": new_access_token,

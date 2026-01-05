@@ -7,8 +7,12 @@ from datetime import datetime
 import httpx
 import logging
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from shared.database import get_db
-from shared.auth import get_current_user
+from services.auth import dependencies, models as auth_models
 from .models import Notification, NotificationPreference
 
 logger = logging.getLogger(__name__)
@@ -37,11 +41,11 @@ async def get_notifications(
     skip: int = 0,
     limit: int = 20,
     unread_only: bool = False,
-    current_user: dict = Depends(get_current_user),
+    current_user: auth_models.User = Depends(dependencies.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get user notifications"""
-    query = select(Notification).where(Notification.user_id == current_user["sub"])
+    query = select(Notification).where(Notification.user_id == current_user.id)
     
     if unread_only:
         query = query.where(Notification.is_read == False)
@@ -72,14 +76,14 @@ async def get_notifications(
 @app.put("/api/v1/notifications/{notification_id}/read")
 async def mark_notification_read(
     notification_id: str,
-    current_user: dict = Depends(get_current_user),
+    current_user: auth_models.User = Depends(dependencies.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark notification as read"""
     stmt = (
         update(Notification)
         .where(Notification.id == notification_id)
-        .where(Notification.user_id == current_user["sub"])
+        .where(Notification.user_id == current_user.id)
         .values(is_read=True, read_at=datetime.utcnow())
     )
     
@@ -92,13 +96,13 @@ async def mark_notification_read(
 # Mark all as read
 @app.put("/api/v1/notifications/mark-all-read")
 async def mark_all_read(
-    current_user: dict = Depends(get_current_user),
+    current_user: auth_models.User = Depends(dependencies.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark all notifications as read"""
     stmt = (
         update(Notification)
-        .where(Notification.user_id == current_user["sub"])
+        .where(Notification.user_id == current_user.id)
         .where(Notification.is_read == False)
         .values(is_read=True, read_at=datetime.utcnow())
     )
@@ -112,20 +116,20 @@ async def mark_all_read(
 # Get notification preferences
 @app.get("/api/v1/notifications/preferences")
 async def get_preferences(
-    current_user: dict = Depends(get_current_user),
+    current_user: auth_models.User = Depends(dependencies.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get user notification preferences"""
     result = await db.execute(
         select(NotificationPreference).where(
-            NotificationPreference.user_id == current_user["sub"]
+            NotificationPreference.user_id == current_user.id
         )
     )
     prefs = result.scalar_one_or_none()
     
     if not prefs:
         # Create default preferences
-        prefs = NotificationPreference(user_id=current_user["sub"])
+        prefs = NotificationPreference(user_id=current_user.id)
         db.add(prefs)
         await db.commit()
         await db.refresh(prefs)
@@ -146,19 +150,19 @@ async def get_preferences(
 @app.put("/api/v1/notifications/preferences")
 async def update_preferences(
     preferences: dict,
-    current_user: dict = Depends(get_current_user),
+    current_user: auth_models.User = Depends(dependencies.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Update user notification preferences"""
     result = await db.execute(
         select(NotificationPreference).where(
-            NotificationPreference.user_id == current_user["sub"]
+            NotificationPreference.user_id == current_user.id
         )
     )
     prefs = result.scalar_one_or_none()
     
     if not prefs:
-        prefs = NotificationPreference(user_id=current_user["sub"])
+        prefs = NotificationPreference(user_id=current_user.id)
         db.add(prefs)
     
     # Update fields

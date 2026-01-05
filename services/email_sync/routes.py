@@ -265,11 +265,11 @@ async def get_sync_status(
         
         return {
             "status": "connected",
-            "sync_status": "active" if sync_state.is_syncing else "idle",
+            "sync_status": "active" if sync_state.sync_status == 'active' else "idle",
             "email": user.email,
             "last_sync_at": sync_state.last_sync_at.isoformat() if sync_state.last_sync_at else None,
             "last_history_id": sync_state.last_history_id,
-            "total_emails": sync_state.total_emails_synced or 0
+            "total_emails": 0
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get sync status: {str(e)}")
@@ -298,7 +298,7 @@ async def stop_sync(
         sync_state = sync_state_result.scalars().first()
         
         if sync_state:
-            sync_state.is_syncing = False
+            sync_state.sync_status = "inactive"
             await db.commit()
             return {"message": "Sync stopped", "status": "stopped"}
         
@@ -306,44 +306,7 @@ async def stop_sync(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to stop sync: {str(e)}")
 
-@router.get("/list")
-async def list_emails(
-    skip: int = 0,
-    limit: int = 50,
-    user = Depends(dependencies.get_current_active_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """List synced emails for the current user"""
-    try:
-        result = await db.execute(
-            select(models.Email)
-            .where(models.Email.user_id == user.id)
-            .order_by(models.Email.received_at.desc())
-            .offset(skip)
-            .limit(limit)
-        )
-        emails = result.scalars().all()
-        
-        return {
-            "emails": [
-                {
-                    "id": str(email.id),
-                    "subject": email.subject,
-                    "sender": email.sender,
-                    "recipient": email.recipient,
-                    "received_at": email.received_at.isoformat() if email.received_at else None,
-                    "body_preview": email.body_text[:200] if email.body_text else "",
-                    "is_read": email.is_read,
-                    "gmail_message_id": email.gmail_message_id
-                }
-                for email in emails
-            ],
-            "total": len(emails),
-            "skip": skip,
-            "limit": limit
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to list emails: {str(e)}")
+
 
 @router.get("/messages", response_model=List[schemas.EmailResponse])
 async def list_messages(
