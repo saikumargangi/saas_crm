@@ -4,8 +4,9 @@
  */
 
 const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL ||
-    (typeof window === 'undefined' ? 'http://localhost:8000/api/v1' : '/api/v1');
+    (typeof window === 'undefined')
+        ? (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1')
+        : '/api/v1'; // Force relative path on client to use Next.js Proxy (avoids CORS)
 
 class APIClient {
     private getAccessToken(): string | null {
